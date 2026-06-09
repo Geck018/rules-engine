@@ -1,0 +1,24 @@
+{
+  "lastCheckedAt": "2026-06-09T08:23:36.880Z",
+  "domains": {
+    "mtg": {
+      "sourceUrl": "https://magic.wizards.com/en/rules",
+      "localVersion": "January 16, 2026",
+      "localGeneratedAt": "2026-06-09T07:00:00.000Z",
+      "remoteVersion": null,
+      "remotePdfUrl": null,
+      "updateAvailable": false,
+      "lastCheckedAt": "2026-06-09T08:23:36.880Z"
+    },
+    "warhammer": {
+      "sourceUrl": "https://www.warhammer-community.com/en-gb/downloads/warhammer-40000/",
+      "localVersion": "10th Edition (24.09)",
+      "localGeneratedAt": "2026-06-09T08:09:31.499Z",
+      "remoteVersion": null,
+      "remotePdfUrl": null,
+      "updateAvailable": false,
+      "note": "11th edition Core Rules detected on GW site but automated download is often blocked; manual PDF refresh may be required.",
+      "lastCheckedAt": "2026-06-09T08:23:36.880Z"
+    }
+  }
+}

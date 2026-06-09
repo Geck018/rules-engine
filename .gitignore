@@ -1,0 +1,7 @@
+node_modules
+dist
+demo-dist
+.wrangler
+*.log
+.DS_Store
+scripts/data/*.pdf

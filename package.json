@@ -1,0 +1,76 @@
+{
+  "name": "rules-engine",
+  "version": "0.1.0",
+  "description": "A config-driven rules assistant you plug into any app. Define a game/sport domain, point it at an official rules dataset, and get a grounded, citable rules chatbot. Runs in-app with no required hosting; bring your own LLM (or none).",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "keywords": [
+    "rules",
+    "chatbot",
+    "retrieval",
+    "rag",
+    "tabletop",
+    "react",
+    "react-component"
+  ],
+  "files": [
+    "dist",
+    "public/data"
+  ],
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker/index.d.ts",
+      "import": "./dist/worker/index.js"
+    },
+    "./domains": {
+      "types": "./dist/domains/index.d.ts",
+      "import": "./dist/domains/index.js"
+    },
+    "./data/*": "./public/data/*"
+  },
+  "scripts": {
+    "build:lib": "tsup",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.worker.json",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
+    "rules:ingest": "node scripts/ingest-generic.mjs",
+    "rules:check": "node scripts/check-rules-updates.mjs",
+    "rules:check:apply": "node scripts/check-rules-updates.mjs --apply"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "wrangler": "^3.80.0"
+  }
+}

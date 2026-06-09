@@ -1,0 +1,47 @@
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0d0d1a;
+  color: #e8e8e8;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.demo-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1.25rem;
+}
+
+.demo-header {
+  text-align: center;
+}
+
+.demo-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  background: linear-gradient(90deg, #e94560, #9d4edd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.demo-header p {
+  margin: 0.35rem 0 0;
+  color: #a0a0b0;
+  font-size: 0.95rem;
+}
+
+.demo-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
