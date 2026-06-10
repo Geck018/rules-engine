@@ -13,11 +13,62 @@ grounded, citable rules chatbot React component.
 
 ## Install
 
+Not yet published to npm — install straight from GitHub (the library builds
+itself on install):
+
+```bash
+npm install github:Geck018/rules-engine react
+```
+
+Once published to npm it will be:
+
 ```bash
 npm install rules-engine react
 ```
 
-React is a peer dependency.
+React is a peer dependency (only needed if you use the `<RulesChat />` component).
+
+## Quick start (user guide)
+
+1. **Install** (see above) in any React app (Vite, Next.js client components, CRA...).
+2. **Make a dataset reachable.** Easiest: copy the bundled datasets into your
+   app's public dir so they're served at `/data/*.json`:
+
+   ```bash
+   cp -r node_modules/rules-engine/public/data public/
+   ```
+
+   (Or skip serving files entirely and bundle the JSON — see
+   [Bundle the dataset](#bundle-the-dataset-no-static-files-to-serve).)
+3. **Render the component:**
+
+   ```tsx
+   import { RulesChat } from 'rules-engine/react';
+   import { mtg, wh40k } from 'rules-engine/domains';
+
+   export function Help() {
+     return <RulesChat domains={[mtg, wh40k]} />;
+   }
+   ```
+
+   That's a complete, working offline rules assistant — type a question, get
+   the best-matching official rules with citations. No backend, no API key.
+4. **Optional — conversational answers:** plug in an LLM via the `answer` prop
+   (see [Add an LLM](#add-an-llm-optional)).
+5. **Optional — your own game/sport:** write one config object
+   (see [Define a new domain](#define-a-new-domain-eg-a-sport)).
+
+### `<RulesChat />` props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `domains` | `RulesDomain[]` | required | Domains the assistant supports. First one is selected on load; a switcher appears when there are 2+. |
+| `defaultDomainId` | `string` | first domain | Id of the domain to start on. |
+| `answer` | `RulesAnswerer` | none (offline) | Pluggable AI answerer. Omit for retrieval-only mode; pass `httpAnswerer(...)`, `openAiAnswerer(...)`, or your own function for LLM answers. |
+| `manifestUrl` | `string` | `/data/rules-manifest.json` | Freshness-manifest URL (powers the "rules updated" banner). Optional — the chat works without it. |
+| `onBack` | `() => void` | none | If provided, renders a back button that calls it. |
+
+Styles are injected automatically — there is no CSS file to import.
 
 ## Use it (offline, zero hosting)
 

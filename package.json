@@ -41,8 +41,17 @@
     },
     "./data/*": "./public/data/*"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Geck018/rules-engine.git"
+  },
+  "homepage": "https://github.com/Geck018/rules-engine#readme",
+  "bugs": {
+    "url": "https://github.com/Geck018/rules-engine/issues"
+  },
   "scripts": {
     "build:lib": "tsup",
+    "prepare": "tsup",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
