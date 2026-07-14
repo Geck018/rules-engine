@@ -1,5 +1,5 @@
 {
-  "name": "rules-engine",
+  "name": "@geck018/rules-engine",
   "version": "0.1.0",
   "description": "A config-driven rules assistant you plug into any app. Define a game/sport domain, point it at an official rules dataset, and get a grounded, citable rules chatbot. Runs in-app with no required hosting; bring your own LLM (or none).",
   "type": "module",
@@ -16,8 +16,13 @@
   ],
   "files": [
     "dist",
-    "public/data"
+    "public/data",
+    "LICENSE",
+    "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     "./core": {
       "types": "./dist/core/index.d.ts",
@@ -56,6 +61,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.worker.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "worker:dev": "wrangler dev",
     "worker:deploy": "wrangler deploy",
     "rules:ingest": "node scripts/ingest-generic.mjs",
@@ -80,6 +87,7 @@
     "tsup": "^8.3.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
+    "vitest": "^2.1.0",
     "wrangler": "^3.80.0"
   }
 }

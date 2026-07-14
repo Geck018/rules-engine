@@ -13,17 +13,25 @@ grounded, citable rules chatbot React component.
 
 ## Install
 
-Not yet published to npm — install straight from GitHub (the library builds
-itself on install):
+**From GitHub** (works today — the library builds itself on install):
 
 ```bash
 npm install github:Geck018/rules-engine react
 ```
 
-Once published to npm it will be:
+**From npm** (once published):
 
 ```bash
-npm install rules-engine react
+npm install @geck018/rules-engine react
+```
+
+Import paths use the package name on disk. With the GitHub install that is
+`@geck018/rules-engine/...` after `package.json` is scoped (or `rules-engine/...`
+if you pin an older commit). Prefer:
+
+```tsx
+import { RulesChat } from '@geck018/rules-engine/react';
+import { mtg, wh40k, chess } from '@geck018/rules-engine/domains';
 ```
 
 React is a peer dependency (only needed if you use the `<RulesChat />` component).
@@ -35,7 +43,7 @@ React is a peer dependency (only needed if you use the `<RulesChat />` component
    app's public dir so they're served at `/data/*.json`:
 
    ```bash
-   cp -r node_modules/rules-engine/public/data public/
+   cp -r node_modules/@geck018/rules-engine/public/data public/
    ```
 
    (Or skip serving files entirely and bundle the JSON — see
@@ -43,11 +51,11 @@ React is a peer dependency (only needed if you use the `<RulesChat />` component
 3. **Render the component:**
 
    ```tsx
-   import { RulesChat } from 'rules-engine/react';
-   import { mtg, wh40k } from 'rules-engine/domains';
+   import { RulesChat } from '@geck018/rules-engine/react';
+   import { mtg, wh40k, chess } from '@geck018/rules-engine/domains';
 
    export function Help() {
-     return <RulesChat domains={[mtg, wh40k]} />;
+     return <RulesChat domains={[mtg, wh40k, chess]} />;
    }
    ```
 
@@ -73,11 +81,11 @@ Styles are injected automatically — there is no CSS file to import.
 ## Use it (offline, zero hosting)
 
 ```tsx
-import { RulesChat } from 'rules-engine/react';
-import { mtg, wh40k } from 'rules-engine/domains';
+import { RulesChat } from '@geck018/rules-engine/react';
+import { mtg, wh40k, chess } from '@geck018/rules-engine/domains';
 
 export function Help() {
-  return <RulesChat domains={[mtg, wh40k]} />;
+  return <RulesChat domains={[mtg, wh40k, chess]} />;
 }
 ```
 
@@ -85,14 +93,15 @@ That's it — no backend, no API key. The component lazy-loads the rules dataset
 finds the best-matching official rules for the question, and shows them with
 citations. Styles inject themselves (no CSS import).
 
-> The bundled domains default to fetching their dataset from `/data/*.json`.
-> Either copy the JSON into your app's public dir, or bundle it (next section).
+> MTG and Warhammer fetch `/data/*.json` by default. Chess ships with `loadRaw`
+> (bundled JSON) so it works with no static files. Copy datasets into your
+> public dir, or bundle them (next section).
 
 ## Bundle the dataset (no static files to serve)
 
 ```tsx
-import { mtg } from 'rules-engine/domains';
-import mtgData from 'rules-engine/data/mtg-comprehensive-rules.json';
+import { mtg } from '@geck018/rules-engine/domains';
+import mtgData from '@geck018/rules-engine/data/mtg-comprehensive-rules.json';
 
 const mtgBundled = { ...mtg, loadRaw: async () => mtgData };
 
@@ -100,6 +109,7 @@ const mtgBundled = { ...mtg, loadRaw: async () => mtgData };
 ```
 
 `loadRaw` takes precedence over `datasetUrl`, so nothing needs to be hosted.
+The chess example domain already does this internally.
 
 ## Add an LLM (optional)
 
@@ -108,20 +118,21 @@ Pass an `answer` function. Use a bundled adapter or write your own.
 **Your own backend** (keeps API keys server-side — recommended for production):
 
 ```tsx
-import { httpAnswerer } from 'rules-engine/adapters';
+import { httpAnswerer } from '@geck018/rules-engine/adapters';
 
 <RulesChat domains={[mtg]} answer={httpAnswerer({ url: '/api/rules/chat' })} />
 ```
 
 Your endpoint receives `{ query, gameSystem, rulesContext }` and returns
-`{ response: string }`. The `rules-engine/worker` export and `worker/index.ts`
-give you a ready-made Cloudflare Workers AI implementation, but any backend works.
+`{ response: string }`. The `@geck018/rules-engine/worker` export and
+`examples/worker/index.ts` give you a ready-made Cloudflare Workers AI
+implementation, but any backend works.
 
 **OpenAI-compatible, directly** (single-user / local tools — exposes the key in
 the browser, so don't ship it to end users):
 
 ```tsx
-import { openAiAnswerer } from 'rules-engine/adapters';
+import { openAiAnswerer } from '@geck018/rules-engine/adapters';
 
 <RulesChat
   domains={[mtg]}
@@ -132,7 +143,7 @@ import { openAiAnswerer } from 'rules-engine/adapters';
 **Anything else** — an answerer is just a function:
 
 ```ts
-import type { RulesAnswerer } from 'rules-engine/core';
+import type { RulesAnswerer } from '@geck018/rules-engine/core';
 
 const answer: RulesAnswerer = async ({ query, domain, context, citations }) => {
   // call your model with `context` (retrieved official rules) as grounding
@@ -140,7 +151,7 @@ const answer: RulesAnswerer = async ({ query, domain, context, citations }) => {
 };
 ```
 
-`buildPrompt(domain, query, context, enrichment)` from `rules-engine/core`
+`buildPrompt(domain, query, context, enrichment)` from `@geck018/rules-engine/core`
 produces the same grounded system/user messages every adapter uses.
 
 ## Define a new domain (e.g. a sport)
@@ -157,7 +168,7 @@ produces the same grounded system/user messages every adapter uses.
    ```
 3. **Write the domain config** (`pickleball.ts`):
    ```ts
-   import type { RulesDomain, NormalizedRules } from 'rules-engine/core';
+   import type { RulesDomain, NormalizedRules } from '@geck018/rules-engine/core';
    import data from './pickleball-rules.json';
 
    function normalize(raw: unknown): NormalizedRules {
@@ -197,17 +208,19 @@ dist/
   react/      <RulesChat /> (self-injecting styles, pluggable answerer)
   adapters/   httpAnswerer, openAiAnswerer
   worker/     createRulesHandler factory (optional, for Cloudflare Workers AI)
-  domains/    Example domains: mtg, wh40k
-public/data/  Datasets + freshness manifest (importable via rules-engine/data/*)
+  domains/    Example domains: mtg, wh40k, chess
+public/data/  Datasets + freshness manifest (importable via @geck018/rules-engine/data/*)
 ```
 
-`src/demo` (a runnable example app) and `worker/index.ts` (a deployable worker)
-live in the repo but are **not** part of the published library.
+`examples/demo` (runnable app) and `examples/worker` (deployable Workers AI
+entry) live in the repo but are **not** part of the published library.
 
 ## Repo scripts
 
 ```bash
 npm run build:lib    # build the distributable library (dist/) with tsup
+npm test             # unit tests (search + loadRaw)
+npm run typecheck    # app + worker TypeScript
 npm run dev          # run the demo app
 npm run worker:dev   # run the example Cloudflare worker (for the demo's AI path)
 npm run rules:ingest # generic text -> dataset JSON

@@ -1,0 +1,49 @@
+{
+  "source": "FIDE Laws of Chess (excerpt, illustrative)",
+  "sourceUrl": "https://www.fide.com/FIDE/handbook/LawsOfChess.pdf",
+  "version": "Illustrative 2026 sample",
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "entryCount": 8,
+  "entries": [
+    {
+      "title": "The Chessboard",
+      "section": "Basic Rules",
+      "text": "The chessboard is composed of an 8×8 grid of 64 equal squares alternately light and dark. The board is placed between the players so that the near corner square to the right of each player is light."
+    },
+    {
+      "title": "King",
+      "section": "The Pieces",
+      "text": "The king moves one square in any direction: horizontally, vertically, or diagonally. The king may also castle if the conditions for castling are met. The king is in check when it is attacked by one or more of the opponent's pieces."
+    },
+    {
+      "title": "Queen",
+      "section": "The Pieces",
+      "text": "The queen moves any number of squares vertically, horizontally or diagonally. She may not jump over other pieces."
+    },
+    {
+      "title": "Rook",
+      "section": "The Pieces",
+      "text": "The rook moves any number of squares vertically or horizontally. It may not jump over other pieces. The rook is also involved in castling."
+    },
+    {
+      "title": "Bishop",
+      "section": "The Pieces",
+      "text": "The bishop moves any number of squares diagonally. It may not jump over other pieces. A bishop remains on squares of the same colour throughout the game."
+    },
+    {
+      "title": "Knight",
+      "section": "The Pieces",
+      "text": "The knight moves to any of the nearest squares that are not on the same rank, file or diagonal (an L-shape). The knight is the only piece that may jump over other pieces."
+    },
+    {
+      "title": "Castling",
+      "section": "Special Moves",
+      "text": "Castling is a move of the king and either rook of the same colour along the player's first rank, counting as a single move of the king. The king is transferred two squares towards the rook, then that rook is transferred over the king to the square the king has just crossed. Castling is prevented if the king or rook has already moved, if the squares between them are occupied, or if the king is currently in check or would pass through or finish on a square attacked by the opponent."
+    },
+    {
+      "title": "Checkmate",
+      "section": "Game End",
+      "text": "The game is won by the player who has checkmated the opponent's king. The king is checkmated if it is in check and there is no legal move that removes the check. The game also ends when a player resigns, when both players agree a draw, or by special draw claims such as stalemate, threefold repetition, or the fifty-move rule."
+    }
+  ]
+}

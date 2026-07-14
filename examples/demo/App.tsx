@@ -2,13 +2,13 @@
  * Demo app. This is all it takes to consume the engine: import the component,
  * pass it the domains you want, and you have a grounded rules assistant.
  *
- * Add a new game/sport by importing another domain config and adding it to the
- * `domains` array — no other changes needed.
+ * Chess uses loadRaw (bundled JSON). MTG / Warhammer use datasetUrl (served
+ * from public/data). Adding another game = one more domain in the array.
  */
 
-import { RulesChat } from '../react';
-import { httpAnswerer } from '../adapters';
-import { mtg, wh40k } from '../domains';
+import { RulesChat } from '../../src/react';
+import { httpAnswerer } from '../../src/adapters';
+import { mtg, wh40k, chess } from '../../src/domains';
 
 // Optional: route answers through the bundled worker (npm run worker:dev).
 // If the worker isn't running, RulesChat silently falls back to offline,
@@ -23,7 +23,7 @@ export function App() {
         <p>One config-driven assistant. Switch games in the header.</p>
       </header>
       <main className="demo-main">
-        <RulesChat domains={[mtg, wh40k]} answer={answer} />
+        <RulesChat domains={[mtg, wh40k, chess]} answer={answer} />
       </main>
     </div>
   );

@@ -19,6 +19,16 @@
       "updateAvailable": false,
       "note": "11th edition Core Rules detected on GW site but automated download is often blocked; manual PDF refresh may be required.",
       "lastCheckedAt": "2026-06-09T08:23:36.880Z"
+    },
+    "chess": {
+      "sourceUrl": "https://www.fide.com/FIDE/handbook/LawsOfChess.pdf",
+      "localVersion": "Illustrative 2026 sample",
+      "localGeneratedAt": "2026-07-14T00:00:00.000Z",
+      "remoteVersion": null,
+      "remotePdfUrl": null,
+      "updateAvailable": false,
+      "note": "Illustrative excerpt for the third-domain demo; not a full FIDE republication.",
+      "lastCheckedAt": "2026-07-14T00:00:00.000Z"
     }
   }
 }

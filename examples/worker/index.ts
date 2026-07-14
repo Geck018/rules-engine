@@ -1,16 +1,16 @@
 /**
  * Deployable Cloudflare Worker for the rules-engine demo.
  *
- * Wires the reusable handler factory to the bundled MTG + Warhammer domains.
+ * Wires the reusable handler factory to the bundled example domains.
  * To support a different set of games/sports, swap the domains below.
  */
 
-import { createRulesHandler, type RulesAiEnv } from '../src/worker/handler';
-import { mtg, wh40k } from '../src/domains';
+import { createRulesHandler, type RulesAiEnv } from '../../src/worker/handler';
+import { mtg, wh40k, chess } from '../../src/domains';
 
 export interface Env extends RulesAiEnv {}
 
-const handleRulesChat = createRulesHandler([mtg, wh40k]);
+const handleRulesChat = createRulesHandler([mtg, wh40k, chess]);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

@@ -17,6 +17,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
-  "exclude": ["worker", "scripts"]
+  "include": ["src", "examples/demo"],
+  "exclude": ["examples/worker", "scripts"]
 }

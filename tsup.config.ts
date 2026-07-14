@@ -1,8 +1,8 @@
 import { defineConfig } from 'tsup';
 
 // Builds the distributable library. Each subpath export is its own entry; React
-// is external (a peer dependency). The demo app (src/demo) and the deployable
-// worker (worker/) are NOT part of the published library.
+// is external (a peer dependency). examples/demo and examples/worker are NOT
+// part of the published library.
 export default defineConfig({
   entry: {
     'core/index': 'src/core/index.ts',

@@ -1,5 +1,5 @@
 name = "rules-engine-api"
-main = "worker/index.ts"
+main = "examples/worker/index.ts"
 compatibility_date = "2024-09-23"
 
 # Workers AI binding — powers the grounded rules answers.

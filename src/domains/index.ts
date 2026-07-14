@@ -2,3 +2,4 @@
 
 export { mtg } from './mtg';
 export { wh40k } from './wh40k';
+export { chess } from './chess';
