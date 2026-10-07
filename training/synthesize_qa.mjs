@@ -4,7 +4,13 @@
  * (custom rulebooks + toys + shipped examples). Writes corpora-manifest.json so
  * the lab Test tab can chat against exactly what was trained.
  *
- * Usage: node training/synthesize_qa.mjs
+ * Eval is held out by rulebook (domain id), not by shuffled row — so train never
+ * sees those books. Override with EVAL_DOMAIN_IDS=id1,id2.
+ *
+ * Optional: --paraphrase (or PARAPHRASE=1) rewrites questions via an OpenAI-
+ * compatible API when OPENAI_API_KEY / RULES_PARAPHRASE_API_KEY is set.
+ *
+ * Usage: node training/synthesize_qa.mjs [--paraphrase]
  */
 
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -14,8 +20,11 @@ import {
   examplesFromDoc,
   pairsFromDocs,
   formatSftRow,
+  enrichExample,
   GENERIC_SYSTEM_PROMPT,
+  ABSTAIN_RATE,
 } from './lib/qa_templates.mjs';
+import { paraphraseQuestions, wantsParaphrase } from './lib/paraphrase.mjs';
 import { loadCorpora } from './lib/load_corpora.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,18 +37,6 @@ if (!domains.length) {
   process.exit(1);
 }
 
-const allExamples = [];
-const allPairs = [];
-const docsByDomain = new Map();
-
-for (const domain of domains) {
-  docsByDomain.set(domain.id, domain.docs);
-  for (const doc of domain.docs) {
-    allExamples.push(...examplesFromDoc(doc, domain.id));
-  }
-  allPairs.push(...pairsFromDocs(domain.docs, domain.id));
-}
-
 function mulberry32(a) {
   return function () {
     let t = (a += 0x6d2b79f5);
@@ -49,16 +46,91 @@ function mulberry32(a) {
   };
 }
 const rand = mulberry32(42);
-const shuffled = [...allExamples].sort(() => rand() - 0.5);
 
-const evalCount = Math.min(64, Math.floor(shuffled.length * 0.12));
-const evalSet = shuffled.slice(0, evalCount);
-const trainSet = shuffled.slice(evalCount);
+/** Prefer one real book + one toy; keep at least one domain for training. */
+function resolveEvalDomainIds(allDomains) {
+  const available = new Set(allDomains.map((d) => d.id));
+  const fromEnv = (process.env.EVAL_DOMAIN_IDS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((id) => id && available.has(id));
+
+  let chosen = fromEnv;
+  if (!chosen.length) {
+    const toys = allDomains.filter((d) => d.origin === 'toy');
+    const real = allDomains.filter((d) => d.origin === 'example' || d.origin === 'custom');
+    const preferredReal =
+      real.find((d) => d.id === 'chess') || real.find((d) => d.id === 'nbha') || real[0];
+    const preferredToy = toys.find((d) => d.id === 'lanterns') || toys[0];
+    chosen = [];
+    if (preferredReal) chosen.push(preferredReal.id);
+    if (preferredToy) chosen.push(preferredToy.id);
+  }
+
+  // Never hold out every domain — leave at least one for train.
+  if (chosen.length >= allDomains.length) {
+    chosen = chosen.slice(0, Math.max(1, allDomains.length - 1));
+  }
+  return chosen;
+}
+
+const evalDomainIds = resolveEvalDomainIds(domains);
+const evalDomainSet = new Set(evalDomainIds);
+const trainDomains = domains.filter((d) => !evalDomainSet.has(d.id));
+const evalDomains = domains.filter((d) => evalDomainSet.has(d.id));
+
+const docsByDomain = new Map(domains.map((d) => [d.id, d.docs]));
 
 function docsMapFor(domainId) {
   const docs = docsByDomain.get(domainId) ?? [];
   return new Map(docs.map((d) => [`${d.kind}:${d.number}`, d]));
 }
+
+function goldTextFor(domainId, id) {
+  return docsMapFor(domainId).get(id)?.text ?? '';
+}
+
+const trainExamples = [];
+const evalExamples = [];
+const allPairs = [];
+
+for (const domain of trainDomains) {
+  for (const doc of domain.docs) {
+    trainExamples.push(...examplesFromDoc(doc, domain.id));
+  }
+  allPairs.push(...pairsFromDocs(domain.docs, domain.id, 3, rand));
+}
+
+for (const domain of evalDomains) {
+  for (const doc of domain.docs) {
+    evalExamples.push(...examplesFromDoc(doc, domain.id));
+  }
+}
+
+if (wantsParaphrase()) {
+  const allForPara = [...trainExamples, ...evalExamples, ...allPairs];
+  const stats = await paraphraseQuestions(allForPara, (row) => {
+    const id = row.relevant_ids?.[0] ?? row.positive?.id;
+    return id ? goldTextFor(row.domainId, id) : '';
+  });
+  if (stats.enabled) {
+    console.log(`Paraphrased ${stats.paraphrased} questions (${stats.skipped} skipped).`);
+  }
+}
+
+const trainSet = trainExamples.map((ex) => {
+  const docs = docsByDomain.get(ex.domainId) ?? [];
+  const abstain = rand() < ABSTAIN_RATE;
+  return enrichExample(ex, docs, rand, { abstain });
+});
+
+const evalSet = evalExamples.map((ex) => {
+  const docs = docsByDomain.get(ex.domainId) ?? [];
+  // Eval keeps real answers for retrieval metrics; still add distractors in SFT context.
+  return enrichExample(ex, docs, rand, { abstain: false });
+});
+
+const abstainCount = trainSet.filter((ex) => ex.abstain).length;
 
 writeFileSync(
   join(dataDir, 'qa.jsonl'),
@@ -84,9 +156,14 @@ writeFileSync(
 const manifest = {
   generatedAt: new Date().toISOString(),
   domainCount: domains.length,
+  evalDomainIds,
+  trainDomainIds: trainDomains.map((d) => d.id),
   sftRows: trainSet.length,
+  abstainRows: abstainCount,
+  abstainRate: ABSTAIN_RATE,
   pairRows: allPairs.length,
   evalRows: evalSet.length,
+  paraphrased: wantsParaphrase(),
   domains: domains.map((d) => ({
     id: d.id,
     label: d.label,
@@ -95,6 +172,7 @@ const manifest = {
     versionLabel: d.versionLabel,
     docCount: d.docCount,
     origin: d.origin,
+    heldOut: evalDomainSet.has(d.id),
     docs: d.docs,
     quickQuestions: d.quickQuestions,
   })),
@@ -103,6 +181,7 @@ const manifest = {
 writeFileSync(join(dataDir, 'corpora-manifest.json'), JSON.stringify(manifest, null, 2));
 
 console.log(
-  `Synthesized ${trainSet.length} SFT rows, ${allPairs.length} pairs, ${evalSet.length} eval rows ` +
-    `across ${domains.length} domains (${domains.map((d) => d.id).join(', ')}) → ${dataDir}`
+  `Synthesized ${trainSet.length} SFT rows (${abstainCount} abstain), ${allPairs.length} pairs, ` +
+    `${evalSet.length} eval rows | train=[${trainDomains.map((d) => d.id).join(', ')}] ` +
+    `eval-held-out=[${evalDomainIds.join(', ')}] → ${dataDir}`
 );

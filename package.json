@@ -70,6 +70,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "train:synth": "node training/synthesize_qa.mjs",
+    "train:synth:paraphrase": "node training/synthesize_qa.mjs --paraphrase",
     "train:eval": "node training/synthesize_qa.mjs && node training/eval_retrieval.mjs",
     "train:compare": "node training/eval_compare.mjs",
     "worker:dev": "wrangler dev",

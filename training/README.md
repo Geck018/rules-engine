@@ -23,12 +23,15 @@ Synthesize writes `corpora-manifest.json`; the **Test chat** tab loads that set
 # 1) Build synthetic multi-domain Q&A + contrastive pairs
 npm run train:synth
 
+# Optional: paraphrase template questions into player language (needs API key)
+OPENAI_API_KEY=… npm run train:synth -- --paraphrase
+
 # 2) (Optional) fine-tune + export ONNX — requires Python + GPU recommended
 python training/train_embed.py
 python training/train_sft.py
 python training/export_onnx.py
 
-# 3) Eval Recall@k / groundedness heuristics on held-out pairs (TF baseline)
+# 3) Eval Recall@k / groundedness heuristics on held-out books (TF baseline)
 npm run train:eval
 
 # 4) Before/after efficacy: TF vs hybrid (writes compare-metrics.json)
@@ -39,13 +42,21 @@ npm run train:compare
 groundedness for **before (TF)** vs **after (hybrid TF+MiniLM)**. First run may
 download the embedding model. Use `SKIP_EMBED=1` for TF-only.
 
+### Synth details
+
+- **Held-out eval by rulebook**, not by row. Default: one real book (`chess` if present) + one toy (`lanterns`). Override with `EVAL_DOMAIN_IDS=nbha,orchard`. Those domains appear only in `eval.jsonl` (excluded from `qa.jsonl` / `pairs.jsonl`).
+- **SFT distractors:** each row gets 3–5 other same-book rules (TF-ranked hard distractors), shuffled so gold isn’t always first.
+- **Abstention (~12% of train):** context is distractors-only; answer is `The provided rules don't cover this.`
+- **Pairs:** negatives are top TF-scoring wrong rules for that question (hard negatives).
+- **Paraphrase (optional):** `--paraphrase` + `OPENAI_API_KEY` / `RULES_PARAPHRASE_API_KEY` rewrites questions without leaking rule titles/keywords.
+
 ## Outputs
 
 | Path | Purpose |
 | --- | --- |
 | `training/data/qa.jsonl` | SFT rows: system/user/assistant grounded in excerpts |
-| `training/data/pairs.jsonl` | Contrastive (query, positive, negatives) for embedder |
-| `training/data/eval.jsonl` | Held-out eval set |
+| `training/data/pairs.jsonl` | Contrastive (query, positive, hard negatives) for embedder |
+| `training/data/eval.jsonl` | Held-out **rulebooks** (not a random row slice) |
 | `training/data/toy_rulebooks.json` | Synthetic rulebooks mixed into training |
 
 ## Publish targets (runtime defaults)
