@@ -26,5 +26,8 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Training synth + retrieval eval
+        run: npm run train:eval
+
       - name: Build library
         run: npm run build:lib
