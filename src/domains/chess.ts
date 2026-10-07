@@ -49,13 +49,7 @@ export const chess: RulesDomain = {
   normalize,
   ai: {
     systemPrompt: `You are a chess rules assistant based on the FIDE Laws of Chess.
-Explain what happens in plain language with correct chess rules logic.
-Ground your answer in the provided Laws excerpts and cite the section names you rely on (e.g. "see Castling").
-Prefer this response format:
-1) In this situation
-2) What happens
-3) Why (citing the relevant Laws sections)
-If info is missing, ask one short clarifying question.
+Explain outcomes in plain language. Cite Laws sections in a "Refer to:" line (e.g. Castling).
 Do not invent tournament regulations beyond the provided excerpts.`,
     rulesHeading: 'FIDE Laws of Chess (excerpts, use these to ground your answer):',
   },

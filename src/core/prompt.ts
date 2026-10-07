@@ -1,8 +1,10 @@
 /**
- * Prompt construction shared by all answerers (worker, OpenAI, custom). Keeps
- * the grounding format identical no matter which LLM a host app plugs in.
+ * Prompt construction shared by all answerers (worker, OpenAI, browser, custom).
+ * Persona comes from the domain; answer style is shared so replies stay quick
+ * and citable everywhere.
  */
 
+import { ANSWER_STYLE_INSTRUCTIONS } from './answerStyle';
 import type { RulesDomain } from './types';
 
 export interface PromptParts {
@@ -27,11 +29,15 @@ export function buildPrompt(
 
   const enrichmentBlock = enrichment.trim() ? `\n\n${enrichment.trim()}` : '';
 
-  const user = `Game: ${domain.label.full}
+  const user = `Rulebook: ${domain.label.full}
 Question: ${query}
 
 ${domain.ai.rulesHeading}
-${rulesSection}${enrichmentBlock}`;
+${rulesSection}${enrichmentBlock}
 
-  return { system: domain.ai.systemPrompt, user };
+Remember: short natural answer, then "Refer to: [rule ref]". Full text is shown separately.`;
+
+  const system = `${domain.ai.systemPrompt.trim()}\n\n${ANSWER_STYLE_INSTRUCTIONS}`;
+
+  return { system, user };
 }

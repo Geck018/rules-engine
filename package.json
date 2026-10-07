@@ -1,24 +1,25 @@
 {
   "name": "@geck018/rules-engine",
   "version": "0.1.0",
-  "description": "A config-driven rules assistant you plug into any app. Define a game/sport domain, point it at an official rules dataset, and get a grounded, citable rules chatbot. Runs in-app with no required hosting; bring your own LLM (or none).",
+  "description": "Headless rules RAG: hybrid retrieval + browser NN for any rulebook. You own the UI; optional reference React shell included.",
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
   "keywords": [
     "rules",
-    "chatbot",
-    "retrieval",
     "rag",
-    "tabletop",
-    "react",
-    "react-component"
+    "retrieval",
+    "embeddings",
+    "browser-ml",
+    "headless",
+    "tabletop"
   ],
   "files": [
     "dist",
     "public/data",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -35,6 +36,10 @@
     "./adapters": {
       "types": "./dist/adapters/index.d.ts",
       "import": "./dist/adapters/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js"
     },
     "./worker": {
       "types": "./dist/worker/index.d.ts",
@@ -58,11 +63,15 @@
     "build:lib": "tsup",
     "prepare": "tsup",
     "dev": "vite",
+    "lab": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.worker.json",
     "test": "vitest run",
     "test:watch": "vitest",
+    "train:synth": "node training/synthesize_qa.mjs",
+    "train:eval": "node training/synthesize_qa.mjs && node training/eval_retrieval.mjs",
+    "train:compare": "node training/eval_compare.mjs",
     "worker:dev": "wrangler dev",
     "worker:deploy": "wrangler deploy",
     "rules:ingest": "node scripts/ingest-generic.mjs",
@@ -70,15 +79,20 @@
     "rules:check:apply": "node scripts/check-rules-updates.mjs --apply"
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "@huggingface/transformers": "^3.0.0 || ^4.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
+      "optional": true
+    },
+    "@huggingface/transformers": {
       "optional": true
     }
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240909.0",
+    "@types/node": "^26.6.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
@@ -89,5 +103,17 @@
     "vite": "^5.4.10",
     "vitest": "^2.1.0",
     "wrangler": "^3.80.0"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.1"
+  },
+  "credits": {
+    "transformers.js": {
+      "name": "@huggingface/transformers",
+      "copyright": "Hugging Face",
+      "license": "Apache-2.0",
+      "url": "https://github.com/huggingface/transformers.js",
+      "notice": "THIRD_PARTY_NOTICES.md"
+    }
   }
 }

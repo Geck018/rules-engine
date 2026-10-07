@@ -8,6 +8,7 @@ export default defineConfig({
     'core/index': 'src/core/index.ts',
     'react/index': 'src/react/index.ts',
     'adapters/index': 'src/adapters/index.ts',
+    'browser/index': 'src/browser/index.ts',
     'worker/index': 'src/worker/handler.ts',
     'domains/index': 'src/domains/index.ts',
   },
@@ -17,5 +18,10 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   target: 'es2021',
-  external: ['react', 'react-dom', 'react/jsx-runtime'],
+  external: [
+    'react',
+    'react-dom',
+    'react/jsx-runtime',
+    '@huggingface/transformers',
+  ],
 });

@@ -1,4 +1,8 @@
 /**
+ * @deprecated Prefer `@geck018/rules-engine/browser` (`browserModelAnswerer`) for
+ * portable, no-Cloudflare answers. This Workers AI handler remains for hosts
+ * that still want a remote LLM endpoint.
+ *
  * Reusable Cloudflare Workers AI handler factory for the rules assistant.
  *
  * Pass the domains your worker should support; this returns a handler for

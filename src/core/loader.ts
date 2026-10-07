@@ -5,11 +5,12 @@
  */
 
 import { buildIndex, searchIndex, buildContext, type IndexedDoc } from './engine';
-import type { RulesDomain, RulesMeta, RuleSearchResult } from './types';
+import type { RuleDoc, RulesDomain, RulesMeta, RuleSearchResult } from './types';
 
 interface DomainCache {
   promise: Promise<boolean> | null;
   index: IndexedDoc[] | null;
+  docs: RuleDoc[] | null;
   meta: RulesMeta | null;
 }
 
@@ -18,7 +19,7 @@ const caches = new Map<string, DomainCache>();
 function cacheFor(id: string): DomainCache {
   let c = caches.get(id);
   if (!c) {
-    c = { promise: null, index: null, meta: null };
+    c = { promise: null, index: null, docs: null, meta: null };
     caches.set(id, c);
   }
   return c;
@@ -47,6 +48,7 @@ export async function loadDomain(domain: RulesDomain): Promise<boolean> {
       .then((raw: unknown) => {
         if (!raw) return false;
         const { docs, meta } = domain.normalize(raw);
+        cache.docs = docs;
         cache.index = buildIndex(docs);
         cache.meta = meta;
         return true;
@@ -59,6 +61,11 @@ export async function loadDomain(domain: RulesDomain): Promise<boolean> {
 /** Metadata about a loaded domain (source, version), if available. */
 export function getDomainMeta(domain: RulesDomain): RulesMeta | null {
   return cacheFor(domain.id).meta;
+}
+
+/** Normalized docs for a loaded domain, if available. */
+export function getDomainDocs(domain: RulesDomain): RuleDoc[] | null {
+  return cacheFor(domain.id).docs;
 }
 
 /** Search a loaded domain. Returns [] if the dataset hasn't loaded yet. */

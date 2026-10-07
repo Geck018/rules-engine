@@ -1,16 +1,18 @@
 /**
- * Drop-in rules assistant UI. Fully driven by the `domains` you pass in — the
- * game switcher, quick questions, citations, greeting and AI grounding are all
- * derived from each domain's config. No game-specific code lives here.
+ * Optional reference UI — not the product. Prefer wiring `/core` + `/browser`
+ * into your own surface. This shell exists for demos/labs; pass `identity` to
+ * restyle it, or skip it entirely and keep your brand.
  */
 
-import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type JSX } from 'react';
 import {
   registerDomains,
   loadDomain,
   getDomainMeta,
   searchDomain,
   buildDomainContext,
+  buildContext,
+  formatQuickAnswer,
   loadManifest,
   isUpdateAvailable,
   type RulesDomain,
@@ -18,6 +20,12 @@ import {
   type RulesAnswerer,
 } from '../core';
 import { injectStyles } from './styles';
+import {
+  identityChromeAttrs,
+  identityCredit,
+  identityToCssVars,
+  type RulesVisualIdentity,
+} from './identity';
 
 export interface ChatMessage {
   id: string;
@@ -28,6 +36,13 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+/** Optional search override (e.g. browser hybrid TF+vector retriever). */
+export type RulesChatSearch = (
+  domain: RulesDomain,
+  query: string,
+  limit: number
+) => RuleSearchResult[] | Promise<RuleSearchResult[]>;
+
 export interface RulesChatProps {
   /** Domains this assistant supports. The first is selected by default. */
   domains: RulesDomain[];
@@ -36,11 +51,27 @@ export interface RulesChatProps {
   /**
    * Optional pluggable AI answerer. Omit it for a fully offline, retrieval-only
    * assistant (it shows the best-matching official rule). Provide one (e.g.
-   * `httpAnswerer`, `openAiAnswerer`, or your own) to get LLM answers.
+   * `browserModelAnswerer`, `httpAnswerer`, `openAiAnswerer`, or your own).
    */
   answer?: RulesAnswerer;
+  /**
+   * Optional retrieval override. When set, citations and grounding context use
+   * this instead of the built-in TF search (e.g. hybrid browser embeddings).
+   * Default remains TF-only with zero extra dependencies.
+   */
+  search?: RulesChatSearch;
+  /**
+   * Optional visual identity for this reference shell only.
+   * Production apps should usually bring their own UI instead.
+   */
+  identity?: RulesVisualIdentity;
   /** Optional manifest URL override (freshness banner). Default '/data/rules-manifest.json'. */
   manifestUrl?: string;
+  /**
+   * Optional status line for model download / index build progress
+   * (e.g. from `browserModelAnswerer` onProgress).
+   */
+  statusMessage?: string | null;
   onBack?: () => void;
 }
 
@@ -94,29 +125,28 @@ function renderMarkdown(text: string): JSX.Element[] {
 }
 
 function buildEntryFallback(results: RuleSearchResult[]): string | null {
-  if (!results || results.length === 0) return null;
-  const top = results[0];
-  let label: string;
-  if (top.kind === 'glossary') label = top.title;
-  else if (top.kind === 'rule') label = `${top.number}${top.title !== top.number ? ` ${top.title}` : ''}`;
-  else label = top.title;
-  let out = `**${label}**\n\n${top.text}`;
-  if (results.length > 1) out += `\n\n---\n*See the related rules below for more detail.*`;
-  return out;
+  return formatQuickAnswer(results);
 }
 
 export function RulesChat({
   domains,
   defaultDomainId,
   answer,
+  search,
+  identity,
   manifestUrl,
+  statusMessage,
   onBack,
 }: RulesChatProps) {
   // Register the supplied domains once so the engine can resolve them.
   useMemo(() => registerDomains(...domains), [domains]);
 
-  // Inject the component stylesheet once (no CSS import needed by consumers).
+  // Inject structural styles once (tokens come from `identity`).
   useEffect(() => injectStyles(), []);
+
+  const identityStyle = useMemo(() => identityToCssVars(identity), [identity]);
+  const chromeAttrs = useMemo(() => identityChromeAttrs(identity), [identity]);
+  const credit = useMemo(() => identityCredit(identity), [identity]);
 
   const initialId = defaultDomainId && domains.some((d) => d.id === defaultDomainId)
     ? defaultDomainId
@@ -170,7 +200,7 @@ export function RulesChat({
       {
         id: `welcome-${activeDomain.id}`,
         role: 'assistant',
-        content: `Welcome to the ${activeDomain.label.full} Rules Assistant! 🎲\n\nAsk me any rules question. Try:\n${samples}${note}`,
+        content: `${activeDomain.label.full}\n\nAsk a rules question. Examples:\n${samples}${note}`,
         timestamp: new Date(),
       },
     ]);
@@ -201,8 +231,13 @@ export function RulesChat({
     let ruleContext = '';
     try {
       await loadDomain(domain);
-      citations = searchDomain(domain, question, 6);
-      ruleContext = buildDomainContext(domain, question);
+      if (search) {
+        citations = await search(domain, question, 6);
+        ruleContext = buildContext(citations);
+      } else {
+        citations = searchDomain(domain, question, 6);
+        ruleContext = buildDomainContext(domain, question);
+      }
     } catch {
       /* non-fatal: continue without grounding */
     }
@@ -239,11 +274,19 @@ export function RulesChat({
   };
 
   if (!activeDomain) {
-    return <div className="rules-chat">No rules domains configured.</div>;
+    return (
+      <div className="rules-chat" style={identityStyle as CSSProperties} {...chromeAttrs}>
+        No rules domains configured.
+      </div>
+    );
   }
 
   return (
-    <div className="rules-chat">
+    <div
+      className="rules-chat"
+      style={identityStyle as CSSProperties}
+      {...chromeAttrs}
+    >
       <div className="rules-chat-header">
         {onBack && (
           <button className="back-button" onClick={onBack}>
@@ -251,7 +294,9 @@ export function RulesChat({
           </button>
         )}
         <div className="rules-chat-title">
-          <span className="rules-chat-icon">📖</span>
+          <span className="rules-chat-icon" aria-hidden="true">
+            {activeDomain.label.icon || '📖'}
+          </span>
           <h2>{activeDomain.label.short} Rules Assistant</h2>
           {versionLabel && (
             <span className="rules-source-note">
@@ -260,7 +305,7 @@ export function RulesChat({
           )}
         </div>
         {domains.length > 1 && (
-          <div className="rules-game-switch" role="group" aria-label="Choose game">
+          <div className="rules-game-switch" role="group" aria-label="Choose rulebook">
             {domains.map((d) => (
               <button
                 key={d.id}
@@ -269,7 +314,10 @@ export function RulesChat({
                 disabled={isTyping}
                 title={d.label.full}
               >
-                <span aria-hidden="true">{d.label.icon}</span> {d.label.short}
+                <span className="domain-icon" aria-hidden="true">
+                  {d.label.icon}
+                </span>{' '}
+                {d.label.short}
               </button>
             ))}
           </div>
@@ -283,6 +331,12 @@ export function RulesChat({
         </div>
       )}
 
+      {statusMessage && (
+        <div className="rules-update-banner" role="status">
+          {statusMessage}
+        </div>
+      )}
+
       <div className="rules-chat-messages">
         {messages.map((message) => (
           <div key={message.id} className={`chat-message ${message.role}`}>
@@ -290,12 +344,10 @@ export function RulesChat({
             <div className="message-content">
               <div className="message-text">{renderMarkdown(message.content)}</div>
               {message.citations && message.citations.length > 0 && (
-                <div className="message-rules comp-rules">
-                  <div className="comp-rules-label">{message.citationLabel || '📜 Official Rules'}</div>
-                  {message.citations.map((rule) => (
-                    <CompRuleCard key={`${rule.kind}-${rule.number}`} rule={rule} />
-                  ))}
-                </div>
+                <CitationDigIn
+                  label={message.citationLabel || 'Source rules'}
+                  citations={message.citations}
+                />
               )}
             </div>
           </div>
@@ -344,6 +396,40 @@ export function RulesChat({
           Send
         </button>
       </form>
+      {credit && <div className="rules-chat-credit">{credit}</div>}
+    </div>
+  );
+}
+
+/** Collapsed by default — quick answer stays primary; technical dig-in is opt-in. */
+function CitationDigIn({
+  label,
+  citations,
+}: {
+  label: string;
+  citations: RuleSearchResult[];
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="message-rules comp-rules">
+      <button
+        type="button"
+        className="comp-rules-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="comp-rules-label">{label}</span>
+        <span className="comp-rules-count">
+          {citations.length} excerpt{citations.length === 1 ? '' : 's'} · {open ? 'Hide' : 'Show'}
+        </span>
+      </button>
+      {open && (
+        <div className="comp-rules-body">
+          {citations.map((rule) => (
+            <CompRuleCard key={`${rule.kind}-${rule.number}`} rule={rule} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

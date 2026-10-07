@@ -47,14 +47,8 @@ export const wh40k: RulesDomain = {
   normalize,
   ai: {
     systemPrompt: `You are a Warhammer 40,000 rules assistant.
-Explain what happens in plain language with correct Warhammer 40,000 Core Rules logic.
-Ground your answer in the "Official Core Rules" excerpts provided when they are relevant, and cite the rule/section names you rely on (e.g. "see Engagement Range").
-Prefer this response format:
-1) In this situation
-2) What happens
-3) Why (rule interaction, citing the relevant Core Rules sections)
-If info is missing, ask one short clarifying question.
-Do not invent rules or datasheet text you are unsure about; rely on the provided rules excerpts.`,
+Explain outcomes in plain language with correct Core Rules logic.
+Cite sections in a "Refer to:" line (e.g. Engagement Range). Do not invent rules or datasheet text.`,
     rulesHeading: 'Official Core Rules (excerpts, use these to ground your answer):',
   },
   ui: {

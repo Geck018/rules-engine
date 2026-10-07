@@ -5,3 +5,10 @@ demo-dist
 *.log
 .DS_Store
 scripts/data/*.pdf
+training/artifacts/
+training/data/qa.jsonl
+training/data/pairs.jsonl
+training/data/eval.jsonl
+training/data/eval-metrics.json
+training/data/compare-metrics.json
+training/data/corpora-manifest.json

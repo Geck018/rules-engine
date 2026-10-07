@@ -1,0 +1,90 @@
+{
+  "books": [
+    {
+      "id": "lanterns",
+      "label": "Festival of Lanterns",
+      "docs": [
+        {
+          "kind": "entry",
+          "number": "Lighting",
+          "title": "Lighting a Lantern",
+          "section": "Setup",
+          "text": "A player lights a lantern by spending one spark token during the Lighting phase. A lit lantern scores two points at dusk."
+        },
+        {
+          "kind": "entry",
+          "number": "Wind",
+          "title": "Wind Gusts",
+          "section": "Hazards",
+          "text": "On a wind gust, every unsecured lantern is extinguished. Secured lanterns remain lit."
+        },
+        {
+          "kind": "entry",
+          "number": "Securing",
+          "title": "Securing",
+          "section": "Actions",
+          "text": "A player may secure one of their lit lanterns by spending an anchor token. Secured lanterns cannot be extinguished by wind."
+        },
+        {
+          "kind": "glossary",
+          "number": "Spark",
+          "title": "Spark",
+          "text": "A resource token used only to light lanterns."
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "label": "River Relay",
+      "docs": [
+        {
+          "kind": "entry",
+          "number": "Baton",
+          "title": "Passing the Baton",
+          "section": "Turns",
+          "text": "A runner may pass the baton only while both runners occupy the same bank space. The receiver becomes the active runner."
+        },
+        {
+          "kind": "entry",
+          "number": "Current",
+          "title": "River Current",
+          "section": "Movement",
+          "text": "Moving downstream costs one stamina. Moving upstream costs two stamina. Diagonal bank hops are illegal."
+        },
+        {
+          "kind": "entry",
+          "number": "Finish",
+          "title": "Finish Line",
+          "section": "Winning",
+          "text": "The team that carries the baton into the finish hex wins. If the baton is dropped in the water, reset it to the last bank space."
+        }
+      ]
+    },
+    {
+      "id": "orchard",
+      "label": "Orchard Rights",
+      "docs": [
+        {
+          "kind": "rule",
+          "number": "3.1",
+          "title": "3.1",
+          "section": "Picking",
+          "text": "A picker may harvest at most three apples per turn from trees they control."
+        },
+        {
+          "kind": "rule",
+          "number": "3.2",
+          "title": "3.2",
+          "section": "Picking",
+          "text": "Shared trees may be harvested by any picker, but each apple taken from a shared tree costs one favor token."
+        },
+        {
+          "kind": "glossary",
+          "number": "Favor",
+          "title": "Favor",
+          "text": "A token representing goodwill with the orchard warden; spent to harvest shared trees."
+        }
+      ]
+    }
+  ]
+}
