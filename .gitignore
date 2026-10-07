@@ -12,3 +12,6 @@ training/data/eval.jsonl
 training/data/eval-metrics.json
 training/data/compare-metrics.json
 training/data/corpora-manifest.json
+# Local training corpora only — never commit real rulebooks (task is domain-agnostic).
+training/data/rulebooks/*
+!training/data/rulebooks/.gitkeep

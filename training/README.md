@@ -1,7 +1,12 @@
 # Training — domain-agnostic rules RAG models
 
-Weights learn the **task** (retrieve + answer from excerpts), not a specific game.
-Per-rulebook state at runtime is only `RuleDoc[]` + an embedding index.
+Weights learn the **task** (retrieve + answer from *whatever* excerpts you give),
+not a specific game or sport. At runtime a domain is only `RuleDoc[]` + an index —
+trained books are scaffolding, not product data.
+
+**Do not commit rulebooks.** `training/data/rulebooks/` is gitignored. Keep corpora
+on disk (or paste via the lab UI) for local synth/train only. Mix many unrelated
+books so the model generalizes; hold one out for eval.
 
 ## Local lab UI
 
@@ -13,9 +18,9 @@ npm run lab
 The Train tab calls the Vite lab API (`scripts/lab-api-plugin.mjs`) to run
 synthesize / eval and optionally kick off the Python fine-tunes.
 
-**Any rulebook:** drop JSON into `training/data/rulebooks/` (or paste via the UI).
-Synthesize writes `corpora-manifest.json`; the **Test chat** tab loads that set
-(not a hardcoded game list).
+**Any rulebook (local only):** drop JSON into `training/data/rulebooks/` (or paste
+via the UI). Synthesize writes `corpora-manifest.json`; the **Test chat** tab
+loads that set (not a hardcoded game list).
 
 ## Pipeline (CLI)
 
@@ -44,7 +49,7 @@ download the embedding model. Use `SKIP_EMBED=1` for TF-only.
 
 ### Synth details
 
-- **Held-out eval by rulebook**, not by row. Default: one real book (`chess` if present) + one toy (`lanterns`). Override with `EVAL_DOMAIN_IDS=nbha,orchard`. Those domains appear only in `eval.jsonl` (excluded from `qa.jsonl` / `pairs.jsonl`).
+- **Held-out eval by rulebook**, not by row. Default: one real book (`chess` if present) + one toy (`lanterns`). Override with `EVAL_DOMAIN_IDS=semver,lanterns` (any local ids). Those domains appear only in `eval.jsonl` (excluded from `qa.jsonl` / `pairs.jsonl`).
 - **SFT distractors:** each row gets 3–5 other same-book rules (TF-ranked hard distractors), shuffled so gold isn’t always first.
 - **Abstention (~12% of train):** context is distractors-only; answer is `The provided rules don't cover this.`
 - **Pairs:** negatives are top TF-scoring wrong rules for that question (hard negatives).

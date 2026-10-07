@@ -59,8 +59,7 @@ function resolveEvalDomainIds(allDomains) {
   if (!chosen.length) {
     const toys = allDomains.filter((d) => d.origin === 'toy');
     const real = allDomains.filter((d) => d.origin === 'example' || d.origin === 'custom');
-    const preferredReal =
-      real.find((d) => d.id === 'chess') || real.find((d) => d.id === 'nbha') || real[0];
+    const preferredReal = real.find((d) => d.id === 'chess') || real[0];
     const preferredToy = toys.find((d) => d.id === 'lanterns') || toys[0];
     chosen = [];
     if (preferredReal) chosen.push(preferredReal.id);
